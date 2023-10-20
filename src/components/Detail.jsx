@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.css';
 import { Link } from "react-router-dom";
+import axios from 'axios';
+import { toast } from "react-toastify";
 
 
 const keyapi = 'bbf6f9dfb0527e901039ca82c8d74b56';
@@ -12,24 +14,39 @@ function DetailMovie() {
   const [genres, setGenres] = useState([]);
 
   useEffect(() => {
-    const fetchFilmDetail = async () => {
+
+    const getMovieList = async () => {
       try {
-        const response = await fetch(
-          `https://api.themoviedb.org/3/movie/${id}?api_key=${keyapi}`
+        const token = localStorage.getItem("token");
+
+        const response = await axios.get(
+          `https://shy-cloud-3319.fly.dev/api/v1/movie/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
+
+        const data = response.data.data;
+
         setFilm(data);
-        setGenres(data.genres);
       } catch (error) {
-        console.error('Error fetching film detail:', error);
+        if (axios.isAxiosError(error)) {
+          // If not valid token
+          if (error.response.status === 401) {
+            localStorage.removeItem("token");
+            // Temporary solution
+          }
+          toast.error(error.response.data.message);
+          return;
+        }
+        toast.error(error.message);
       }
     };
 
-    fetchFilmDetail();
-  }, [id]);
+    getMovieList();
+    }, [id]);
 
   if (!film) {
     return <div>LOADING...</div>;

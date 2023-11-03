@@ -1,16 +1,21 @@
-import { useEffect, useState } from "react";
-import { getMovieList, searchMovie } from "../api/api";
+import React, { useEffect, useState } from "react";
 import { ArrowRight, Search } from "react-bootstrap-icons";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import { toast } from "react-toastify";
-import { Button } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllPosts, getMovieSearch } from "../redux/actions/postActions";
+
 
 function Home() {
-  const [moviePopular, setMoviePopular] = useState([]);
-  const [searchResults, setsearchresults] = useState([]);
   const [input, setInput] = useState(``);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+//ambil data movie
+  const dispatch = useDispatch()
+  const {posts} = useSelector((state) => state.post)
+  console.log(input)
+  
+  useEffect(() => {
+    dispatch(getAllPosts());
+  }, [dispatch]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -20,82 +25,19 @@ function Home() {
     }
   }, []);
 
+  const { setsearch } = useSelector((state) => state.post)
 
   useEffect(() => {
+    dispatch(getMovieSearch(input))
+  }, [dispatch, input])
+  console.log(setsearch)
 
-    const getMovieList = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        const response = await axios.get(
-          `https://shy-cloud-3319.fly.dev/api/v1/movie/popular`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = response.data.data;
-        setMoviePopular(data);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          // If not valid token
-          if (error.response.status === 401) {
-            localStorage.removeItem("token");
-            // Temporary solution
-          }
-          toast.error(error.response.data.message);
-          return;
-        }
-        toast.error(error.message);
-      }
-    };
-
-    getMovieList();
-  }, []);
-
-useEffect(() => {
-
-  const searchMovieList = async () => {
-    const datainput = input
-    try {
-  
-      const token = localStorage.getItem("token");
-
-      const response = await axios.get(
-        `https://shy-cloud-3319.fly.dev/api/v1/search/movie?page=1&query=${datainput}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = response.data.data;
-      setsearchresults(data);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        // If not valid token
-        if (error.response.status === 401) {
-          localStorage.removeItem("token");
-          // Temporary solution
-        }
-        toast.error(error.response.data.message);
-        return;
-      }
-      toast.error(error.message);
-    }
-  };
-
-  searchMovieList();
-  }, [input]);
-  const filteredMovies = input.length >= 2 ? searchResults : moviePopular;
+  const filteredMovies = input.length >= 3 ? setsearch : posts;
 
   const MovieList = () => {
     return (
       <div className="movie-grid">
-        {filteredMovies.map((movie) => (
+        {filteredMovies && filteredMovies.map((movie) => (
           <div className="movie-item" key={movie.id}>
             <Link to={`/detail/${movie.id}`}>
               <img
@@ -107,13 +49,6 @@ useEffect(() => {
         ))}
       </div>
     );
-  };
-
-  const search = async (q) => {
-    if (q.length > 3) {
-      const query = await searchMovie(q);
-      setMoviePopular(query.results);
-    }
   };
 
   return (

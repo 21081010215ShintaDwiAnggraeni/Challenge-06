@@ -1,50 +1,26 @@
-import React, { useState } from "react";
+// import React, { useState } from "react";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
-import axios from "axios";
-// import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useNavigate } from 'react-router';
 import GoogleLogin from "../components/GoogleLogin";
+import { useDispatch } from "react-redux";
+import { login } from "../redux/actions/authActions";
+import { useState } from "react";
 
 function Login() {
-  // const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      let data = JSON.stringify({
+    let data = JSON.stringify({
         email,
         password,
-      });
+    });
 
-      let config = {
-        method: "post",
-        url: `https://shy-cloud-3319.fly.dev/api/v1/auth/login`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: data,
-      };
-
-      const response = await axios.request(config);
-      const { token } = response.data.data;
-
-      localStorage.setItem("token", token);
-
-      // navigate("/");
-
-      // Temporary solution
-      window.location.href = "/";
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        toast.error(error.response.data.message);
-        return;
-      }
-      toast.error(error.message);
-    }
+    dispatch(login(data, navigate));
   };
 
   return (
@@ -60,9 +36,6 @@ function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <Form.Text className="text-muted">
-                We'll never share your email with anyone else.
-              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">
@@ -87,7 +60,7 @@ function Login() {
       </Row>
       <Row>
         <Col className="text-center">
-          <GoogleLogin buttonText="Login with Google 🚀" />
+          <GoogleLogin buttonText="Login with Google" />
         </Col>
       </Row>
     </Container>

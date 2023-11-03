@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
-import axios from "axios";
-// import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import GoogleLogin from "../components/GoogleLogin";
+import { useDispatch } from "react-redux";
+import { register } from "../redux/actions/authActions";
 
 function Register() {
-  // const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,41 +15,22 @@ function Register() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      let data = JSON.stringify({
+      // Send data as JSON
+      const data = {
         name,
         email,
         password,
-      });
-
-      let config = {
-        method: "post",
-        url: `https://shy-cloud-3319.fly.dev/api/v1/auth/register`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: data,
       };
 
-      const response = await axios.request(config);
-      const { token } = response.data.data;
+      dispatch(register(data, navigate));
 
-      localStorage.setItem("token", token);
-
-      // navigate("/");
-
-      // Temporary solution
-      window.location.href = "/";
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        toast.error(error.response.data.message);
-        return;
-      }
-      toast.error(error.message);
+      // Handle the error here
+      console.error(error);
     }
   };
-
+  
   return (
     <Container className="p-4">
       <Row>
@@ -72,9 +54,6 @@ function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <Form.Text className="text-muted">
-                We'll never share your email with anyone else.
-              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">
@@ -99,7 +78,7 @@ function Register() {
       </Row>
       <Row>
         <Col className="text-center">
-          <GoogleLogin buttonText="Register with Google 🚀" />
+          <GoogleLogin buttonText="Register with Google" />
         </Col>
       </Row>
     </Container>

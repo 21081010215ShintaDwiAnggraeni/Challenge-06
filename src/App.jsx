@@ -6,8 +6,13 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import { Provider } from "react-redux";
+import store from "./redux/store";
+
+
 function App() {
   return (
+    <Provider store={store}>
     <GoogleOAuthProvider clientId={`643146615220-tll24n6run2aq0t3s8a48gqsvke2li1q.apps.googleusercontent.com`}>
     <div className="App">
       <header className="App-header">
@@ -22,6 +27,7 @@ function App() {
       </header>
     </div>
     </GoogleOAuthProvider>
+    </Provider>
   );
 }
 
